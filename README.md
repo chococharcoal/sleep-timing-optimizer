@@ -11,7 +11,7 @@ The result is visualized with Chart.js.
 NOTE: This was written for a high school math project, so it simplifies equations from this link (https://pubmed.ncbi.nlm.nih.gov/25084361/) and may not exactly reproduce the original study. Some aspects of the paper were simplified or approximated. 
 
 
-## Features
+Features
 - Calculates optimal sleep start time based on today’s and tomorrow’s wake times.
 - Visualizes sleep pressure (H(t)) and circadian thresholds using Chart.js.
 - Interactive and easy-to-use interface.
@@ -19,40 +19,12 @@ NOTE: This was written for a high school math project, so it simplifies equation
 
 
 
-## How it works
+How it works
 - Implements the dual-process model:
   - Process S: homeostatic sleep pressure
   - Process C: circadian rhythm modulation
 - Simulates sleep-wake states over a 24-hour cycle.
-- Recommends the first feasible sleep onset after 12 hours of wake time.
-
-
-## How to use
-1. Open the file in a browser.
-2. Input your wake-up times for today and tomorrow.
-3. Click "Calculate Sleep" to see the recommended bedtime.
-4. The chart shows:
-   - Black line: sleep pressure H(t)
-   - Red dashed line: upper threshold
-   - Blue dashed line: lower threshold
-5. Click "Reset" to clear inputs and the chart.
-
-
-
-## Technologies Used
-- HTML / CSS / JavaScript
-- [Chart.js](https://www.chartjs.org/) for graph visualization
-
-
-
-## References / Resources
-Sleep Need, Previous Sleep, and Wake Times Influence Cognitive Performance 
-- PMID: 25084361, https://pubmed.ncbi.nlm.nih.gov/25084361/
-
-
-------------------------------------------------------------------------------------------------------------------------
-
-## Korean Description
+- Recommends the first feasible sleep onset명
 
 Sleep Timing Optimizer는 HTML 기반 프로그램으로, 수면-각성 이중 조절 모델을 기반으로 대략적인 최적 취침 시간을 추정해주는 프로그램입니다.
 오늘 내가 일어난 시간과 내일 일어나야 할 시간을 입력하면 오늘 몇시에 자는것이 좋은지 계산합니다.
@@ -61,7 +33,7 @@ Sleep Timing Optimizer는 HTML 기반 프로그램으로, 수면-각성 이중 �
 참고: 이 프로그램은 고등학교 수학 수행평가용으로 제작되었으며, 프로그램에서 구현된 수식이 원래의 수식과 차이가 있을 수 있습니다. 수식은 링크된(https://pubmed.ncbi.nlm.nih.gov/25084361/) 연구를 참고했지만, 이 논문의 결과를 정확히 구현하지 않으며 일부 수치는 근사하거나 단순화된 다른 수치로 대체되었을 수 있습니다.
 
 
-## 주요 기능
+주요 기능
 - 오늘과 내일의 기상 시간을 기반으로 최적의 취침 시작 시간을 계산
 - Chart.js를 이용해 수면 압력(H(t))과 생체 리듬 임계값 시각화
 - 직관적이고 상호작용 가능한 사용자 인터페이스 제공
@@ -69,7 +41,7 @@ Sleep Timing Optimizer는 HTML 기반 프로그램으로, 수면-각성 이중 �
 
 
 
-## 작동하는 방법
+작동하는 방법
 - 이중 조절 모델 구현:
   - Process S: 항상성 수면 압력
   - Process C: 생체 리듬 변동
@@ -77,7 +49,7 @@ Sleep Timing Optimizer는 HTML 기반 프로그램으로, 수면-각성 이중 �
 - 기상 12시간 이후 가능한 첫 수면 시작 시간 추천
 
 
-## 사용 방법
+사용 방법
 1. 브라우저에서 파일 열기
 2. 오늘과 내일의 기상 시간 입력
 3. "수면 시간 계산" 버튼 클릭하여 추천 취침 시간 확인
@@ -89,12 +61,12 @@ Sleep Timing Optimizer는 HTML 기반 프로그램으로, 수면-각성 이중 �
 
 
 
-## 사용한 기술
+사용한 기술
 - HTML / CSS / JavaScript
 - [Chart.js](https://www.chartjs.org/) 그래프 시각화
 
 
 
-## 참고 문헌 / 자료
+참고 문헌 / 자료
 Sleep Need, Previous Sleep, and Wake Times Influence Cognitive Performance 
 — PMID: 25084361, https://pubmed.ncbi.nlm.nih.gov/25084361/
