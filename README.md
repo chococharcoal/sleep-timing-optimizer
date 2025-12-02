@@ -24,8 +24,9 @@ How it works
   - Process S: homeostatic sleep pressure
   - Process C: circadian rhythm modulation
 - Simulates sleep-wake states over a 24-hour cycle.
-- Recommends the first feasible sleep onset명
+- Recommends the first feasible sleep onset
 
+## 한글 설명
 Sleep Timing Optimizer는 HTML 기반 프로그램으로, 수면-각성 이중 조절 모델을 기반으로 대략적인 최적 취침 시간을 추정해주는 프로그램입니다.
 오늘 내가 일어난 시간과 내일 일어나야 할 시간을 입력하면 오늘 몇시에 자는것이 좋은지 계산합니다.
 계산된 결과는 Chart.js를 사용해 그래프로 시각화됩니다.
