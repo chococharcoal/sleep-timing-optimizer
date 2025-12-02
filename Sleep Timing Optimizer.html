@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  
+  <title>수면 시작 시각 추천</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    
+    /* Basic page style / 기본 스타일 */
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f9fafb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* Main container / 전체 컨테이너 */
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      height: 90vh;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* Left input panel / 왼쪽 입력 패널 */
+    .left-panel {
+      width: 300px;
+      padding: 20px;
+      background: #fafafa;
+      border-right: 1px solid #ddd;
+      display: flex;
+      flex-direction: column;
+    }
+    .left-panel h2 {
+      margin: 0 0 20px;
+      font-size: 1.2rem;
+    }
+    label {
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+    input[type="time"] {
+      padding: 8px;
+      font-size: 1rem;
+      width: 100%;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #4338ca;
+    }
+
+    /* Right chart panel / 오른쪽 그래프 패널 */
+    .right-panel {
+      flex: 1;
+      padding: 20px;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+    }
+    #result {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #333;
+      text-align: center;
+    }
+  </style>
+</head>
+
+
+
+<body>
+  <div class="container">
+    <!-- Left panel: input section / 왼쪽 패널: 입력 영역-->
+    <div class="left-panel">
+      <h2>최적의 취침 시작 시간 찾기</h2>
+      <label for="wakeToday">오늘 기상 시각</label>
+      <input type="time" id="wakeToday">
+      <label for="wakeTomorrow">내일 기상 시각</label>
+      <input type="time" id="wakeTomorrow">
+      <button onclick="runModel()">수면 시간 계산</button>
+      <button onclick="resetPage()">리셋</button>
+      <p id="result"></p>
+    </div>
+
+    <!-- Right panel: chart / 오른쪽 패널: 그래프-->
+    <div class="right-panel">
+      <canvas id="sleepChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // Store Chart.js instance / Chart.js 인스턴스 저장
+    let chartInstance = null;
+
+    
+    // Convert HH:MM to decimal hours / HH:MM을 소수 시간 변환
+    function parseTime(str) {
+      if (!str) return NaN;
+      const [h, m] = str.split(":").map(Number);
+      return h + m / 60;
+    }
+
+    
+    // Convert decimal hours to HH:MM / 소수 시간을 HH:MM 문자열로 변환
+    function formatTime(decimalHour) {
+      const h = Math.floor(decimalHour) % 24;
+      const m = Math.floor((decimalHour % 1) * 60);
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    }
+
+    
+    // Reset inputs and chart / 입력값 리셋
+    function resetPage() {
+      document.getElementById("wakeToday").value = "";
+      document.getElementById("wakeTomorrow").value = "";
+      document.getElementById("result").innerText = "";
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+    }
+
+    
+    
+    
+    // -------------------------
+    // Run Sleep–Wake Model
+    // 수면-각성 모델 실행
+    // -------------------------
+    
+    
+    function runModel() {
+      // Model parameters / 모델 파라미터
+      const tau_w = 18.2, tau_s = 4.2, m = 1.0; // 깨어 있을 때 / 수면 중 변화 / Max
+      const Hz0 = 0.8, Hl0 = 0.3, alpha = 0.1, a = 0; //Circadian rhythm params
+      const omega = (2 * Math.PI) / 24; //24h cycle
+
+      // Time range for simulation / 시뮬레이션 시간 범위
+      const dt = 0.1;
+      const startHour = -1, endHour = 25;
+      const time = [];
+      for (let t = startHour; t <= endHour; t += dt) time.push(t);
+
+      // Read user inputs / 입력값 읽기
+      const wakeToday = parseTime(document.getElementById("wakeToday").value);
+      const wakeTomorrow = parseTime(document.getElementById("wakeTomorrow").value) + 24; //Add 24h
+
+      // Input validation / 입력값 검증
+      if (isNaN(wakeToday) || isNaN(wakeTomorrow)) {
+        document.getElementById("result").innerText = "시간을 정확히 입력해주세요.";
+        return;
+      }
+
+      // Initial sleep pressure H / 초기 수면압력 H
+      const initial_H = Hl0 + alpha * Math.sin(omega * (wakeToday - a));
+      const H = [], state = [], Hz_list = [], Hl_list = [];
+      let curr_H = initial_H, curr_state = "wake";
+
+      
+
+
+
+      
+      // -------------------------
+      //  Simulation loop
+      // 시뮬레이션 루프
+      // -------------------------
+      
+      for (let i = 0; i < time.length; i++) {
+        const t = time[i];
+        const C = Math.sin(omega * (t - a)); // circadian modulation
+        const Hz = Hz0 + alpha * C;
+        const Hl = Hl0 + alpha * C;
+
+        Hz_list.push(Hz);
+        Hl_list.push(Hl);
+
+        // Sleep pressure update / 수면 압력 계산
+        if (curr_state === "wake") {
+          curr_H = m + (curr_H - m) * Math.exp(-dt / tau_w); // Rise during wake / 깨어 있을 때 증가
+          if (curr_H >= Hz) curr_state = "sleep";            // Sleep if threshold reached / 임계값 도달 시 수면
+        } else {
+          curr_H = curr_H * Math.exp(-dt / tau_s);           // Decay during sleep / 수면 중 감소
+          if (curr_H <= Hl) curr_state = "wake";             // Wake if lower threshold / 하부 임계값 도달 시 각성
+        }
+
+        H.push(curr_H);
+        state.push(curr_state);
+      }
+
+
+
+
+
+      // -------------------------
+      // Find recommended bedtime
+      // 추천 취침 시각 탐색
+      // -------------------------
+      
+      const offset = wakeToday;
+      const targetStart = offset + 12; // 12h after wake / 기상 12시간 이후
+      const targetEnd = wakeTomorrow; //  Before next wake / 내일 기상 전
+      let sleepStart = null;
+      for (let i = 1; i < time.length; i++) {
+        const globalT = offset + time[i];
+        if (
+          state[i - 1] === "wake" &&
+          state[i] === "sleep" &&
+          globalT >= targetStart &&
+          globalT <= targetEnd
+        ) {
+          sleepStart = globalT;
+          break;
+        }
+      }
+
+      const resultText = sleepStart
+        ? `추천 수면 시작 시각: ${formatTime(sleepStart)}`
+        : "추천 수면 시각을 찾을 수 없습니다.";
+      document.getElementById("result").innerText = resultText;
+
+      
+
+
+
+      // -------------------------
+      // Render Chart.js graph
+      // 그래프 생성
+      // -------------------------
+      
+      if (chartInstance) chartInstance.destroy();
+      const ctx = document.getElementById("sleepChart").getContext("2d");
+
+      chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: time,
+          datasets: [
+            {
+              label: "H(t)",
+              data: H,
+              borderColor: "black",
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.2,
+            },
+            {
+              label: "Upper Threshold",
+              data: Hz_list,
+              borderColor: "red",
+              borderDash: [5, 5],
+              pointRadius: 0,
+              tension: 0.2,
+            },
+            {
+              label: "Lower Threshold",
+              data: Hl_list,
+              borderColor: "blue",
+              borderDash: [5, 5],
+              pointRadius: 0,
+              tension: 0.2,
+            }
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: "시간 (hh:mm)"
+              },
+              ticks: {
+                callback: function(val, index) {
+                  const t = time[index];
+                  const absolute = offset + t;
+                  return formatTime(absolute);
+                },
+                color: "black"
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: "수면 압력 H(t)"
+              },
+              min: 0,
+              max: 1.1,
+            }
+          },
+          plugins: {
+            legend: { position: "top" },
+            title: {
+              display: true,
+              text: "수면-각성 이중 조절 모델을 활용한 수면 시간 최적화 그래프"
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
